@@ -1,13 +1,11 @@
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
+import Router from "./router";
 import { GlobalStyle } from "./GlobalStyles";
 
 function App() {
   return (
     <>
       <GlobalStyle />
-      <Home />
+      <Router />
     </>
   );
 }

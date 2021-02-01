@@ -1,22 +1,93 @@
 import { Container, FormLogin, Header, Body, Button } from "./styles.js";
 import Input from "../../components/Input/index.js";
+import { Link, useHistory } from "react-router-dom";
+import { api } from "../../services/api";
+import { useState } from "react";
 
 function Register() {
+  const history = useHistory();
+
+  const [register, setRegister] = useState({
+    ra: "",
+    name: "",
+    email: "",
+    password: "",
+    validPassword: "",
+  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post("/students", {
+        ra: register.ra,
+        name: register.name,
+        email: register.email,
+        password: register.password,
+      });
+      console.log(response.data);
+
+      //implementar a autorização
+
+      history.push("/home");
+    } catch (error) {
+      console.error(error);
+      alert(error.response.data.error);
+    }
+  };
+  const handleInput = (e) => {
+    setRegister({ ...register, [e.target.id]: e.target.value });
+  };
+
   return (
     <Container>
-      <FormLogin>
+      <FormLogin onSubmit={handleSubmit}>
         <Header>
           <h1>Bem vindo ao SENAI OVERFLOW</h1>
           <h2>Bem vindo ao SENAI OVERFLOW</h2>
         </Header>
         <Body>
-          <Input label="RA" id="ra" type="text" />
-          <Input label="Nome" id="name" type="text" />
-          <Input label="Email" id="email" type="email" />
-          <Input label="Senha" id="password" type="password" />
-          <Input label="Confirme a Senha" id="valid-password" type="password" />
+          <Input
+            label="RA"
+            id="ra"
+            type="text"
+            value={register.ra}
+            handler={handleInput}
+            required
+          />
+          <Input
+            label="Nome"
+            id="name"
+            type="text"
+            value={register.name}
+            handler={handleInput}
+            required
+          />
+          <Input
+            label="Email"
+            id="email"
+            type="email"
+            value={register.email}
+            handler={handleInput}
+            required
+          />
+          <Input
+            label="Senha"
+            id="password"
+            type="password"
+            value={register.password}
+            handler={handleInput}
+            required
+          />
+          <Input
+            label="Confirme a Senha"
+            id="validPassword"
+            type="password"
+            value={register.validPassword}
+            handler={handleInput}
+            required
+          />
           <Button>Entrar</Button>
-          <a href="#">OU CLIQUE AQUI SE JA TEM CADASTRO</a>
+          <Link to="/">OU CLIQUE AQUI SE JA TEM CADASTRO</Link>
         </Body>
       </FormLogin>
     </Container>

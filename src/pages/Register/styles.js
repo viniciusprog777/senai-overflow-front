@@ -41,7 +41,7 @@ const loginAnimation = keyframes`
         transform: scale(1) rotate(0deg);
     }
 `;
-export const FormLogin = styled.div`
+export const FormLogin = styled.form`
   animation: ${loginAnimation} 0.7s;
   width: 30%;
   min-width: 300px;

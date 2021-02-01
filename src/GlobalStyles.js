@@ -15,6 +15,19 @@ export const GlobalStyle = createGlobalStyle`
         outline: 0;
         box-sizing: border-box;
     }
+
+    ::-webkit-scrollbar-track{
+        background-color: var(--darkGray);
+    }
+
+    ::-webkit-scrollbar{
+        width: 4px;
+        background-color: var(--darkGray);
+    }
+    ::-webkit-scrollbar-thumb{
+        border-radius: 2px;
+        background-color: var(--light);
+    }
     body{
         font-family: sans-serif;
         color: var(--light);

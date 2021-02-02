@@ -1,3 +1,5 @@
+import { useHistory } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Container,
   Header,
@@ -12,13 +14,15 @@ import {
 
 import imgProfile from "../../asset/foto_perfil.png";
 import logo from "../../asset/logo.png";
+import { api } from "../../services/api";
+import { signOut } from "../../services/security";
 
 function Profile() {
   return (
     <>
       <section>
-        <img src={imgProfile} />
-        <a href="a" />
+        <img src={imgProfile} alt="descrição da imagem" />
+        <a href="a">Editar foto</a>
       </section>
       <section>
         <strong>NOME:</strong>
@@ -35,80 +39,75 @@ function Profile() {
     </>
   );
 }
+function Question({ question }) {
+  return (
+    <QuestionCard>
+      <header>
+        <img src={imgProfile} alt="descrição da imagem" />
+        <strong>Por {question.Student.name}</strong>
+        <p>em {question.created_at}</p>
+      </header>
+      <section>
+        <strong>{question.title}</strong>
+        <p>{question.description}</p>
+        <img src={question.image} />
+      </section>
+      <footer>
+        <h1>11 Resposta</h1>
+        <section>
+          <header>
+            <img src={imgProfile} alt="descrição da imagem" />
+            <strong>Por Fulano</strong>
+            <p>12/12/2012 as 12:13</p>
+          </header>
+          <p>Resposta para a pergunta</p>
+        </section>
+        <form>
+          <textarea
+            rows="2"
+            placeholder="Responda essa duvida!"
+            required
+          ></textarea>
+          <button>Enviar</button>
+        </form>
+      </footer>
+    </QuestionCard>
+  );
+}
 function Home() {
+  const history = useHistory();
+
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      const response = await api.get("/feed");
+      console.log(response.data);
+
+      setQuestions(response.data);
+    };
+    loadQuestions();
+  }, []);
+
+  const handleSignOut = () => {
+    signOut();
+
+    history.replace("/");
+  };
   return (
     <Container>
       <Header>
         <Logo src={logo} />
-        <IconSignOut />
+        <IconSignOut onClick={handleSignOut} />
       </Header>
       <Content>
         <ProfileContainer>
           <Profile />
         </ProfileContainer>
         <FeedContainer>
-          <QuestionCard>
-            <header>
-              <img src={imgProfile} />
-              <strong>Por Ciclano da Silva</strong>
-              <p>em 12/12/2012 as 12:12</p>
-            </header>
-            <section>
-              <strong>Titulo</strong>
-              <p>Descrição</p>
-              <img src="https://cdn.evilmartians.com/front/posts/optimizing-react-virtual-dom-explained/cover-a1d5b40.png" />
-            </section>
-            <footer>
-              <h1>11 Resposta</h1>
-              <section>
-                <header>
-                  <img src={imgProfile} />
-                  <strong>Por Fulano</strong>
-                  <p>12/12/2012 as 12:13</p>
-                </header>
-                <p>Resposta para a pergunta</p>
-              </section>
-              <form>
-                <textarea
-                  rows="2"
-                  placeholder="Responda essa duvida!"
-                  required
-                ></textarea>
-                <button>Enviar</button>
-              </form>
-            </footer>
-          </QuestionCard>
-          <QuestionCard>
-            <header>
-              <img src={imgProfile} />
-              <strong>Por Ciclano da Silva</strong>
-              <p>em 12/12/2012 as 12:12</p>
-            </header>
-            <section>
-              <strong>Titulo</strong>
-              <p>Descrição</p>
-              <img src="https://cdn.auth0.com/blog/illustrations/nextjs.png" />
-            </section>
-            <footer>
-              <h1>11 Resposta</h1>
-              <section>
-                <header>
-                  <img src={imgProfile} />
-                  <strong>Por Fulano</strong>
-                  <p>12/12/2012 as 12:13</p>
-                </header>
-                <p>Resposta para a pergunta</p>
-              </section>
-              <form>
-                <textarea
-                  rows="2"
-                  placeholder="Responda essa duvida!"
-                  required
-                ></textarea>
-                <button>Enviar</button>
-              </form>
-            </footer>
-          </QuestionCard>
+          {questions.map((q) => (
+            <Question question={q} />
+          ))}
         </FeedContainer>
         <ActionContainer>
           <button>Fazer uma pergunta</button>

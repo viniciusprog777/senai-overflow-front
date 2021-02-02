@@ -3,6 +3,7 @@ import Input from "../../components/Input/index.js";
 import { Link, useHistory } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
+import { singIn } from "../../services/security.js";
 
 function Login() {
   const history = useHistory();
@@ -16,7 +17,8 @@ function Login() {
 
     try {
       const response = await api.post("/sessions", login);
-      console.log(response.data);
+
+      singIn(response.data);
 
       //implementar a autorização
 

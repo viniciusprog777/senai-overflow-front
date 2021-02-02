@@ -17,6 +17,8 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (register.password !== register.validPassword)
+      return alert("SENHAS NÃO COMPATIVEIS");
     try {
       const response = await api.post("/students", {
         ra: register.ra,
@@ -86,7 +88,18 @@ function Register() {
             handler={handleInput}
             required
           />
-          <Button>Entrar</Button>
+          <Button
+            disabled={
+              !register.name ||
+              !register.email ||
+              !register.ra ||
+              !register.password ||
+              !register.validPassword ||
+              register.password !== register.validPassword
+            }
+          >
+            Entrar
+          </Button>
           <Link to="/">OU CLIQUE AQUI SE JA TEM CADASTRO</Link>
         </Body>
       </FormLogin>

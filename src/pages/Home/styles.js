@@ -52,6 +52,9 @@ export const ProfileContainer = styled.div`
     border-radius: 50%;
     align-self: center;
   }
+  a {
+    align-self: center;
+  }
 `;
 
 export const FeedContainer = styled.div`

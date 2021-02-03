@@ -52,7 +52,7 @@ function Login() {
             label="Senha"
             id="password"
             type="password"
-            valeu={login.password}
+            value={login.password}
             handler={handleInput}
             required
           />

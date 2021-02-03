@@ -15,7 +15,7 @@ import {
 import imgProfile from "../../asset/foto_perfil.png";
 import logo from "../../asset/logo.png";
 import { api } from "../../services/api";
-import { signOut } from "../../services/security";
+import { signOut, getUser } from "../../services/security";
 
 function Profile() {
   return (
@@ -39,7 +39,61 @@ function Profile() {
     </>
   );
 }
+
+function Answer({ answer }) {
+  return (
+    <>
+      <section>
+        <header>
+          <img src={imgProfile} alt="descrição da imagem" />
+          <strong>Por {answer.Student.name}</strong>
+          <p>{answer.created_at}</p>
+        </header>
+        <p>{answer.description}</p>
+      </section>
+    </>
+  );
+}
+
 function Question({ question }) {
+  const [showAnswers, setShowAnswers] = useState(false);
+
+  const [addAnswer, setAddAnswer] = useState(question.Answers);
+
+  const [newAnswer, setNewAnswer] = useState({
+    description: "",
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post(
+        `/questions/${question.id}/answers`,
+        newAnswer
+      );
+
+      const user = getUser();
+
+      const addedAnswer = {
+        id: response.data.id,
+        description: newAnswer.description,
+        created_at: response.data.createdAt,
+        Student: {
+          id: user.studentId,
+          name: user.studentName,
+        },
+      };
+
+      setAddAnswer([...addAnswer, addedAnswer]);
+
+      // history.push("/home");
+    } catch (error) {
+      console.error(error);
+      alert(error.response.data.error);
+    }
+  };
+
   return (
     <QuestionCard>
       <header>
@@ -53,19 +107,23 @@ function Question({ question }) {
         <img src={question.image} />
       </section>
       <footer>
-        <h1>11 Resposta</h1>
-        <section>
-          <header>
-            <img src={imgProfile} alt="descrição da imagem" />
-            <strong>Por Fulano</strong>
-            <p>12/12/2012 as 12:13</p>
-          </header>
-          <p>Resposta para a pergunta</p>
-        </section>
-        <form>
+        <h1 onClick={() => setShowAnswers(!showAnswers)}>
+          {addAnswer.length} Respostas
+        </h1>
+        {showAnswers && (
+          <>
+            {addAnswer.map((a) => (
+              <Answer answer={a} />
+            ))}
+          </>
+        )}
+
+        <form onSubmit={handleSubmit}>
           <textarea
             rows="2"
             placeholder="Responda essa duvida!"
+            value={addAnswer.description}
+            onChange={(e) => setNewAnswer({ description: e.target.value })}
             required
           ></textarea>
           <button>Enviar</button>

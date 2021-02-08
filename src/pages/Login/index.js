@@ -1,9 +1,10 @@
-import { Container, FormLogin, Header, Body, Button } from "./styles.js";
-import Input from "../../components/Input/index.js";
-import { Link, useHistory } from "react-router-dom";
-import { api } from "../../services/api";
 import { useState } from "react";
-import { singIn } from "../../services/security.js";
+import { Link, useHistory } from "react-router-dom";
+import Input from "../../components/Input";
+
+import { api } from "../../services/api";
+import { signIn } from "../../services/security";
+import { Container, FormLogin, Header, Body, Button } from "./styles";
 
 function Login() {
   const history = useHistory();
@@ -12,15 +13,14 @@ function Login() {
     email: "",
     password: "",
   });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const response = await api.post("/sessions", login);
 
-      singIn(response.data);
-
-      //implementar a autorização
+      signIn(response.data);
 
       history.push("/home");
     } catch (error) {
@@ -28,6 +28,7 @@ function Login() {
       alert(error.response.data.error);
     }
   };
+
   const handleInput = (e) => {
     setLogin({ ...login, [e.target.id]: e.target.value });
   };
@@ -36,28 +37,28 @@ function Login() {
     <Container>
       <FormLogin onSubmit={handleSubmit}>
         <Header>
-          <h1>Bem vindo ao SENAI OVERFLOW</h1>
-          <h2>Bem vindo ao SENAI OVERFLOW</h2>
+          <h1>BEM VINDO AO SENAIOVERFLOW</h1>
+          <h2>O SEU PORTAL DE RESPOSTAS</h2>
         </Header>
         <Body>
           <Input
-            label="Email"
             id="email"
+            label="E-mail"
             type="email"
             value={login.email}
             handler={handleInput}
             required
           />
           <Input
-            label="Senha"
             id="password"
+            label="Senha"
             type="password"
             value={login.password}
             handler={handleInput}
             required
           />
           <Button>Entrar</Button>
-          <Link to="/register"> OU CLIQUE AQUI PARA SE CADASTRAR</Link>
+          <Link to="/register"> Ou clique aqui para se cadastrar</Link>
         </Body>
       </FormLogin>
     </Container>

@@ -1,34 +1,50 @@
-import { Container, FormLogin, Header, Body, Button } from "./styles.js";
-import Input from "../../components/Input/index.js";
-import { Link, useHistory } from "react-router-dom";
-import { api } from "../../services/api";
 import { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+import Input from "../../components/Input";
+import { api } from "../../services/api";
+import { Container, FormLogin, Header, Body, Button } from "./styles";
 
 function Register() {
   const history = useHistory();
 
-  const [register, setRegister] = useState({
+  const [student, setStudent] = useState({
     ra: "",
     name: "",
     email: "",
     password: "",
     validPassword: "",
   });
+
+  const handleInput = (e) => {
+    setStudent({ ...student, [e.target.id]: e.target.value });
+  };
+
+  const validPassword = () => student.password === student.validPassword;
+
+  const buttonDisabled = () => {
+    const { ra, name, email, password } = student;
+
+    if (!ra || !name || !email || !password || !validPassword()) return true;
+
+    return false;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (register.password !== register.validPassword)
-      return alert("SENHAS NÃO COMPATIVEIS");
-    try {
-      const response = await api.post("/students", {
-        ra: register.ra,
-        name: register.name,
-        email: register.email,
-        password: register.password,
-      });
-      console.log(response.data);
+    if (!validPassword()) return alert("As senhas precisam ser iguais!");
 
-      //implementar a autorização
+    try {
+      const { ra, name, email, password } = student;
+
+      const response = await api.post("/students", {
+        ra,
+        name,
+        email,
+        password,
+      });
+
+      console.log(response);
 
       history.push("/home");
     } catch (error) {
@@ -36,71 +52,56 @@ function Register() {
       alert(error.response.data.error);
     }
   };
-  const handleInput = (e) => {
-    setRegister({ ...register, [e.target.id]: e.target.value });
-  };
 
   return (
     <Container>
       <FormLogin onSubmit={handleSubmit}>
         <Header>
-          <h1>Bem vindo ao SENAI OVERFLOW</h1>
-          <h2>Bem vindo ao SENAI OVERFLOW</h2>
+          <h1>BEM VINDO AO SENAIOVERFLOW</h1>
+          <h2>INFORME OS SEUS DADOS</h2>
         </Header>
         <Body>
           <Input
-            label="RA"
             id="ra"
+            label="RA"
             type="text"
-            value={register.ra}
+            value={student.ra}
             handler={handleInput}
-            required
           />
           <Input
-            label="Nome"
             id="name"
+            label="Nome"
             type="text"
-            value={register.name}
+            value={student.name}
             handler={handleInput}
-            required
           />
           <Input
-            label="Email"
             id="email"
+            label="E-mail"
             type="email"
-            value={register.email}
+            value={student.email}
             handler={handleInput}
-            required
           />
           <Input
-            label="Senha"
             id="password"
+            label="Senha"
             type="password"
-            value={register.password}
+            value={student.password}
             handler={handleInput}
-            required
           />
           <Input
-            label="Confirme a Senha"
             id="validPassword"
+            label="Confirmar Senha"
             type="password"
-            value={register.validPassword}
+            onBlur={(e) => {
+              if (!validPassword()) alert("As senhas precisam ser iguais");
+              e.target.focus();
+            }}
+            value={student.validPassword}
             handler={handleInput}
-            required
           />
-          <Button
-            disabled={
-              !register.name ||
-              !register.email ||
-              !register.ra ||
-              !register.password ||
-              !register.validPassword ||
-              register.password !== register.validPassword
-            }
-          >
-            Entrar
-          </Button>
-          <Link to="/">OU CLIQUE AQUI SE JA TEM CADASTRO</Link>
+          <Button disabled={buttonDisabled()}>Enviar</Button>
+          <Link to="/">Ou, se já tem cadastro, clique para entrar</Link>
         </Body>
       </FormLogin>
     </Container>

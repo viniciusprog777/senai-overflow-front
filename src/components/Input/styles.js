@@ -14,15 +14,16 @@ export const Container = styled.div`
   }
 
   > label {
-    cursor: text;
     position: absolute;
-    top: 0;
     left: 10px;
-    color: var(--darkGray);
+    top: 0px;
     display: flex;
     align-items: center;
-    top: 0;
-    transition: 0.2s;
+
+    transition: 0.2s ease-in-out;
+
+    color: var(--darkGray);
+    cursor: text;
 
     pointer-events: none;
   }
@@ -32,6 +33,10 @@ export const Container = styled.div`
     width: 100%;
     height: 30px;
     font-size: 16px;
+  }
+
+  > input:focus {
+    border-bottom: 2px solid var(--primary);
   }
 
   > input:not(:placeholder-shown) + label,

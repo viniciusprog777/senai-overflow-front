@@ -22,6 +22,7 @@ import { getUser, signOut } from "../../services/security";
 import Modal from "../../components/Modal";
 import Select from "../../components/Select";
 import Tag from "../../components/Tag";
+import Loading from "../../components/Loading";
 
 function Profile() {
   const student = getUser();
@@ -68,7 +69,7 @@ function Answer({ answer }) {
   );
 }
 
-function Question({ question }) {
+function Question({ question, handleLoading }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -88,6 +89,7 @@ function Question({ question }) {
       return alert("A resposta deve ter no mínimo 10 caracteres");
 
     try {
+      handleLoading(true);
       const response = await api.post(`/questions/${question.id}/answers`, {
         description: newAnswer,
       });
@@ -107,7 +109,10 @@ function Question({ question }) {
       setAnswers([...answers, answerAdded]);
 
       setNewAnswer("");
+
+      handleLoading(false);
     } catch (error) {
+      handleLoading(false);
       alert(error);
     }
   };
@@ -166,7 +171,7 @@ function Question({ question }) {
   );
 }
 
-function NewQuestion({ handleReload }) {
+function NewQuestion({ handleReload, handleLoading }) {
   const [newQuestion, setNewQuestion] = useState({
     title: "",
     description: "",
@@ -250,6 +255,8 @@ function NewQuestion({ handleReload }) {
     if (image) data.append("image", image);
     if (newQuestion.gist) data.append("gist", newQuestion.gist);
     try {
+      handleLoading(true);
+
       await api.post("/questions", data, {
         headers: {
           "Content-type": "multipart/form-data",
@@ -257,7 +264,9 @@ function NewQuestion({ handleReload }) {
       });
 
       handleReload();
-    } catch (error) {}
+    } catch (error) {
+      handleLoading(false);
+    }
   };
   return (
     <FormNewQuestion onSubmit={handleAddNewQuestion}>
@@ -319,11 +328,16 @@ function Home() {
 
   const [showNewQuestion, setShowNewQuestion] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const loadQuestions = async () => {
+      setLoading(true);
+
       const response = await api.get("/feed");
 
       setQuestions(response.data);
+      setLoading(false);
     };
 
     loadQuestions();
@@ -347,9 +361,10 @@ function Home() {
           title="Faça uma pergunta"
           handleClose={() => setShowNewQuestion(false)}
         >
-          <NewQuestion handleReload={handleReload} />
+          <NewQuestion handleReload={handleReload} handleLoading={setLoading} />
         </Modal>
       )}
+      {loading && <Loading />}
 
       <Container>
         <Header>
@@ -362,7 +377,7 @@ function Home() {
           </ProfileContainer>
           <FeedContainer>
             {questions.map((q) => (
-              <Question question={q} />
+              <Question question={q} handleLoading={setLoading} />
             ))}
           </FeedContainer>
           <ActionsContainer>

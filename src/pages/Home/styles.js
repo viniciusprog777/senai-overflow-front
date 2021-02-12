@@ -1,4 +1,4 @@
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt, FaGithub } from "react-icons/fa";
 import styled from "styled-components";
 
 export const Container = styled.div`
@@ -48,9 +48,22 @@ export const ProfileContainer = styled.div`
     gap: 4px;
   }
 
+  input[type="file"] {
+    display: none;
+  }
+
   img {
     width: 35%;
     border-radius: 50%;
+  }
+  label {
+    text-decoration: underline;
+
+    transition: 0.2s;
+    :hover {
+      color: var(--primary);
+      cursor: pointer;
+    }
   }
 `;
 
@@ -221,5 +234,52 @@ export const FormNewQuestion = styled.form`
     align-self: center;
     max-width: 40%;
     display: none;
+  }
+`;
+
+export const GistIcon = styled(FaGithub)`
+  font-size: 25px;
+  margin-right: 10px;
+  cursor: pointer;
+
+  transition: 0.2s;
+
+  :hover {
+    color: var(--primary);
+  }
+
+  :active {
+    transform: scale(0.9);
+  }
+`;
+
+export const ContainerGist = styled.section`
+  margin-top: 10px;
+
+  h2 {
+    font-size: 16px;
+    font-weight: normal;
+
+    text-align: center;
+    margin-bottom: 5px;
+  }
+`;
+
+export const SearchBar = styled.form`
+  width: 430px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px;
+  gap: 25px;
+
+  button {
+    margin-top: 15px;
+    padding: 7px;
+    :hover {
+      background-color: var(--light);
+      color: black;
+    }
   }
 `;

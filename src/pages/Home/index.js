@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { format } from "date-fns";
+import ReactEmbedGist from "react-embed-gist";
 import {
   Container,
   Header,
@@ -12,26 +13,65 @@ import {
   Logo,
   IconSignOut,
   FormNewQuestion,
+  GistIcon,
+  ContainerGist,
+  SearchBar,
 } from "./styles";
 
 import Input from "../../components/Input";
 import imgProfile from "../../assets/foto_perfil.png";
 import logo from "../../assets/logo.png";
 import { api } from "../../services/api";
-import { getUser, signOut } from "../../services/security";
+import { getUser, signOut, setUser } from "../../services/security";
 import Modal from "../../components/Modal";
 import Select from "../../components/Select";
 import Tag from "../../components/Tag";
 import Loading from "../../components/Loading";
+import { validSquaredImage } from "../../utils";
+import { FaGithub } from "react-icons/fa";
 
-function Profile() {
-  const student = getUser();
+function Profile({ handleLoading, handleReload }) {
+  const [student, setStudent] = useState(getUser());
+
+  // useEffect(() => {
+  //   setStudent();
+  // }, []);
+
+  const handleImage = async (e) => {
+    if (!e.target.files[0]) return;
+
+    try {
+      await validSquaredImage(e.target.files[0]);
+      console.log("oioiooi", e.target.files[0]);
+
+      handleLoading(true);
+      const data = new FormData();
+
+      data.append("image", e.target.files[0]);
+
+      const response = await api.post("/students/images", data);
+
+      setTimeout(() => {
+        setStudent({ ...student, studentImage: response.data.image });
+        handleReload();
+      }, 1000);
+
+      setUser({ ...student, studentImage: response.data.image });
+    } catch (error) {
+      console.log(error);
+      alert(error);
+      handleLoading(false);
+    }
+  };
 
   return (
     <>
       <section>
-        <img src={imgProfile} alt="Imagem de Perfil" />
-        <a href="#">Editar Foto</a>
+        <img src={student.studentImage || imgProfile} alt="Imagem de Perfil" />
+        <label href="#" htmlFor="editImageProfile">
+          Editar Foto
+        </label>
+        <input type="file" id="editImageProfile" onChange={handleImage} />
       </section>
       <section>
         <strong>NOME:</strong>
@@ -55,7 +95,7 @@ function Answer({ answer }) {
   return (
     <section>
       <header>
-        <img src={imgProfile} />
+        <img src={answer.Student.image || imgProfile} />
         <strong>
           por{" "}
           {student.studentId === answer.Student.id
@@ -69,7 +109,7 @@ function Answer({ answer }) {
   );
 }
 
-function Question({ question, handleLoading }) {
+function Question({ question, handleLoading, setCurrentGist }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -103,6 +143,7 @@ function Question({ question, handleLoading }) {
         Student: {
           id: aluno.studentId,
           name: aluno.name,
+          image: aluno.studentImage,
         },
       };
 
@@ -122,7 +163,10 @@ function Question({ question, handleLoading }) {
   return (
     <QuestionCard>
       <header>
-        <img src={imgProfile} alt="Imagem de perfil" />
+        <img
+          src={question.Student.image || imgProfile}
+          alt="Imagem de perfil"
+        />
         <strong>
           por{" "}
           {student.studentId === question.Student.id
@@ -132,6 +176,9 @@ function Question({ question, handleLoading }) {
         <p>
           em {format(new Date(question.created_at), "dd/MM/yyyy 'às' HH:mm")}
         </p>
+        {question.gist && (
+          <GistIcon onClick={() => setCurrentGist(question.gist)} />
+        )}
       </header>
       <section>
         <strong>{question.title}</strong>
@@ -319,6 +366,22 @@ function NewQuestion({ handleReload, handleLoading }) {
   );
 }
 
+function Gist({ gist, handleClose }) {
+  if (gist) {
+    const formatedGist = gist.split(".com/").pop();
+    return (
+      <Modal
+        title="Exemplo de código"
+        handleClose={() => handleClose(undefined)}
+      >
+        <ContainerGist>
+          <ReactEmbedGist gist={formatedGist} />
+        </ContainerGist>
+      </Modal>
+    );
+  } else return null;
+}
+
 function Home() {
   const history = useHistory();
 
@@ -329,6 +392,8 @@ function Home() {
   const [showNewQuestion, setShowNewQuestion] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
+  const [currentGist, setCurrentGist] = useState(undefined);
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -356,6 +421,7 @@ function Home() {
 
   return (
     <>
+      <Gist gist={currentGist} handleClose={setCurrentGist} />
       {showNewQuestion && (
         <Modal
           title="Faça uma pergunta"
@@ -369,15 +435,23 @@ function Home() {
       <Container>
         <Header>
           <Logo src={logo} onClick={handleReload} />
+          <SearchBar>
+            <Input id="search" type="search" label="Procure" />
+            <button>Pesquisar</button>
+          </SearchBar>
           <IconSignOut onClick={handleSignOut} />
         </Header>
         <Content>
           <ProfileContainer>
-            <Profile />
+            <Profile handleReload={handleReload} handleLoading={setLoading} />
           </ProfileContainer>
           <FeedContainer>
             {questions.map((q) => (
-              <Question question={q} handleLoading={setLoading} />
+              <Question
+                question={q}
+                handleLoading={setLoading}
+                setCurrentGist={setCurrentGist}
+              />
             ))}
           </FeedContainer>
           <ActionsContainer>

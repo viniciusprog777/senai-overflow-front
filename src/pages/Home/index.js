@@ -395,20 +395,25 @@ function Home() {
 
   const [currentGist, setCurrentGist] = useState(undefined);
 
-  const [search, setSearch] = useState("333")
+  const [pag, setPag] = useState(1);
+
+  const [search, setSearch] = useState({
+    search: "",
+  });
+
+  const handleInput = (e) => {
+    setSearch({ ...search, search: e.target.value });
+  };
 
   useEffect(() => {
     const loadQuestions = async () => {
-      setLoading(true);
-
-      if (search === "") {
-        const response = await api.get("/feed");
-        setQuestions(response.data);
-      }
-      
-      else{
-        console.log(search) 
-        const response = await api.get(`/search/${search}`);
+      if (search.search === "" || search.search.length < 3) {
+        setLoading(true);
+        const response = await api.get(`/feed/${pag}`);
+        setQuestions([...questions, ...response.data]);
+      } else {
+        console.log(search);
+        const response = await api.get(`/search/${search.search}`);
         setQuestions(response.data);
       }
 
@@ -416,7 +421,7 @@ function Home() {
     };
 
     loadQuestions();
-  }, [reload]);
+  }, [reload, search, pag]);
 
   const handleSignOut = () => {
     signOut();
@@ -427,6 +432,8 @@ function Home() {
   const handleReload = () => {
     setShowNewQuestion(false);
     setReload(Math.random());
+    setQuestions([]);
+    setPag(1);
   };
 
   return (
@@ -446,7 +453,13 @@ function Home() {
         <Header>
           <Logo src={logo} onClick={handleReload} />
           <SearchBar>
-            <Input id="search" type="search" label="Procure" />
+            <Input
+              id="search"
+              type="search"
+              label="Procure"
+              value={search.search}
+              handler={handleInput}
+            />
             <button>Pesquisar</button>
           </SearchBar>
           <IconSignOut onClick={handleSignOut} />
@@ -463,6 +476,7 @@ function Home() {
                 setCurrentGist={setCurrentGist}
               />
             ))}
+            <button onClick={() => setPag(pag + 1)}>Ver Mais</button>
           </FeedContainer>
           <ActionsContainer>
             <button onClick={() => setShowNewQuestion(true)}>

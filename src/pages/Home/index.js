@@ -395,13 +395,23 @@ function Home() {
 
   const [currentGist, setCurrentGist] = useState(undefined);
 
+  const [search, setSearch] = useState("333")
+
   useEffect(() => {
     const loadQuestions = async () => {
       setLoading(true);
 
-      const response = await api.get("/feed");
+      if (search === "") {
+        const response = await api.get("/feed");
+        setQuestions(response.data);
+      }
+      
+      else{
+        console.log(search) 
+        const response = await api.get(`/search/${search}`);
+        setQuestions(response.data);
+      }
 
-      setQuestions(response.data);
       setLoading(false);
     };
 

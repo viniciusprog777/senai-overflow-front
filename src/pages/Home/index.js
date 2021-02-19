@@ -16,6 +16,7 @@ import {
   GistIcon,
   ContainerGist,
   SearchBar,
+  IconSearch,
 } from "./styles";
 
 import Input from "../../components/Input";
@@ -29,6 +30,7 @@ import Tag from "../../components/Tag";
 import Loading from "../../components/Loading";
 import { validSquaredImage } from "../../utils";
 import { FaGithub } from "react-icons/fa";
+import SpinnerLoading from "../../components/SpinnerLoading";
 
 function Profile({ handleLoading, handleReload }) {
   const [student, setStudent] = useState(getUser());
@@ -393,35 +395,56 @@ function Home() {
 
   const [loading, setLoading] = useState(false);
 
+  const [loadingFeed, setLoadingFeed] = useState(false);
+
   const [currentGist, setCurrentGist] = useState(undefined);
 
-  const [pag, setPag] = useState(1);
+  const [page, setPage] = useState(1);
 
-  const [search, setSearch] = useState({
-    search: "",
-  });
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
-  const handleInput = (e) => {
-    setSearch({ ...search, search: e.target.value });
+  const [search, setSearch] = useState("");
+
+  const handleSearch = async (e) => {
+    setSearch(e.target.value);
+
+    if (e.target.value.length === 0) handleReload();
+
+    if (e.target.value.length < 4) return;
+
+    try {
+      const response = await api.get(`/search`, {
+        params: {
+          description: e.target.value,
+        },
+      });
+
+      setQuestions(response.data);
+    } catch (error) {
+      console.log(error);
+      alert(error);
+    }
   };
 
+  const loadQuestions = async () => {
+    if (loadingFeed) return;
+
+    if (totalQuestions > 0 && totalQuestions == questions.length) return;
+
+    setLoadingFeed(true);
+    const response = await api.get(`/feed`, {
+      params: { page },
+    });
+    setPage(page + 1);
+    setQuestions([...questions, ...response.data]);
+
+    setTotalQuestions(response.headers["x-total-count"]);
+
+    setLoadingFeed(false);
+  };
   useEffect(() => {
-    const loadQuestions = async () => {
-      if (search.search === "" || search.search.length < 3) {
-        setLoading(true);
-        const response = await api.get(`/feed/${pag}`);
-        setQuestions([...questions, ...response.data]);
-      } else {
-        console.log(search);
-        const response = await api.get(`/search/${search.search}`);
-        setQuestions(response.data);
-      }
-
-      setLoading(false);
-    };
-
     loadQuestions();
-  }, [reload, search, pag]);
+  }, [reload]);
 
   const handleSignOut = () => {
     signOut();
@@ -431,9 +454,18 @@ function Home() {
 
   const handleReload = () => {
     setShowNewQuestion(false);
-    setReload(Math.random());
     setQuestions([]);
-    setPag(1);
+    setLoading(false);
+    setPage(1);
+    setSearch("");
+    setReload(Math.random());
+  };
+
+  const feedScrollObserver = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight > scrollHeight - 50 && search.length < 4) {
+      loadQuestions();
+    }
   };
 
   return (
@@ -457,10 +489,10 @@ function Home() {
               id="search"
               type="search"
               label="Procure"
-              value={search.search}
-              handler={handleInput}
+              value={search}
+              handler={handleSearch}
             />
-            <button>Pesquisar</button>
+            <IconSearch />
           </SearchBar>
           <IconSignOut onClick={handleSignOut} />
         </Header>
@@ -468,7 +500,10 @@ function Home() {
           <ProfileContainer>
             <Profile handleReload={handleReload} handleLoading={setLoading} />
           </ProfileContainer>
-          <FeedContainer>
+          <FeedContainer onScroll={feedScrollObserver}>
+            {questions.length === 0 &&
+              search.length > 3 &&
+              "Nenhuma Questão Encontrada!"}
             {questions.map((q) => (
               <Question
                 question={q}
@@ -476,7 +511,8 @@ function Home() {
                 setCurrentGist={setCurrentGist}
               />
             ))}
-            <button onClick={() => setPag(pag + 1)}>Ver Mais</button>
+            {loadingFeed && <SpinnerLoading />}
+            {totalQuestions == questions.length && "That's all Folks"}
           </FeedContainer>
           <ActionsContainer>
             <button onClick={() => setShowNewQuestion(true)}>

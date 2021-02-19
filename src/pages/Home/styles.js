@@ -1,4 +1,4 @@
-import { FaSignOutAlt, FaGithub } from "react-icons/fa";
+import { FaSignOutAlt, FaGithub, FaSearch } from "react-icons/fa";
 import styled from "styled-components";
 
 export const Container = styled.div`
@@ -282,4 +282,11 @@ export const SearchBar = styled.form`
       color: black;
     }
   }
+`;
+
+export const IconSearch = styled(FaSearch)`
+  position: absolute;
+  margin-right: 450px;
+  margin-top: 15px;
+  font-size: 20px;
 `;
